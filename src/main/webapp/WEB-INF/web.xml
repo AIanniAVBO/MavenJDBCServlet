@@ -4,4 +4,14 @@
 
 <web-app>
   <display-name>Archetype Created Web Application</display-name>
+  <servlet>
+  	<servlet-name>DatabaseTest</servlet-name>
+  	<display-name>DatabaseTest</display-name>
+  	<description></description>
+  	<servlet-class>org.avbo.tpsit.mavenjdbcservlet.DatabaseTest</servlet-class>
+  </servlet>
+  <servlet-mapping>
+  	<servlet-name>DatabaseTest</servlet-name>
+  	<url-pattern>/DatabaseTest</url-pattern>
+  </servlet-mapping>
 </web-app>
