@@ -2,6 +2,11 @@ package org.avbo.tpsit.mavenjdbcservlet;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -26,8 +31,7 @@ public class DatabaseTest extends HttpServlet {
 		super.init();
 
 		try {
-			Class.forName("org.sqlite.JDBC")
-			.getConstructor().newInstance();
+			Class.forName("org.sqlite.JDBC").getConstructor().newInstance();
 		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -58,8 +62,29 @@ public class DatabaseTest extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		response.getWriter().append("Served at: ").append(request.getContextPath());
+		// NOTE: Connection and Statement are AutoClosable.
+		// Don't forget to close them both in order to avoid leaks.
+		try (
+				// create a database connection
+				Connection connection = DriverManager.getConnection("jdbc:sqlite:sample.db");
+				Statement statement = connection.createStatement();) {
+			statement.setQueryTimeout(30); // set timeout to 30 sec.
+
+			statement.executeUpdate("drop table if exists person");
+			statement.executeUpdate("create table person (id integer, name string)");
+			statement.executeUpdate("insert into person values(1, 'leo')");
+			statement.executeUpdate("insert into person values(2, 'yui')");
+			ResultSet rs = statement.executeQuery("select * from person");
+			while (rs.next()) {
+				// read the result set
+				response.getWriter().println("name = " + rs.getString("name"));
+				response.getWriter().println("id = " + rs.getInt("id"));
+			}
+		} catch (SQLException e) {
+			// if the error message is "out of memory",
+			// it probably means no database file is found
+			e.printStackTrace(response.getWriter());
+		}
 	}
 
 	/**
